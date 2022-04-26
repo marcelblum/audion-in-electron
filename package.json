@@ -1,0 +1,14 @@
+{
+  "name": "audion-in-electron",
+  "version": "1.0.0",
+  "description": "testing Audion DevTools extension in Electron",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "author": "Marcel Blum",
+  "dependencies": {
+    "electron": "^16.2.3",
+    "electron-devtools-installer": "latest"
+  }
+}

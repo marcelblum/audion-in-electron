@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+  </head>
+  <body>
+    <button>init audio context & start playing</button>
+	
+    <script>
+		var gainNode, source, ac, songBuffer;
+		var thingsLoaded = 0;
+
+		document.querySelector("button").addEventListener("click", function () {
+		  if (!ac) {
+			const buttonElement = this;
+			buttonElement.setAttribute("disabled", "");
+			ac = new (window.AudioContext || window.webkitAudioContext);
+			gainNode = ac.createGain();
+			gainNode.gain.value = 0.4;
+			const iterateThis = {
+			  "s1_r2_bd.wav": function (decodedAudio) {
+				const convolver = ac.createConvolver();
+				convolver.buffer = decodedAudio;
+				convolver.connect(ac.destination);
+				gainNode.connect(convolver);
+			  },
+			  "SamCookeSummertime.mp3": function (decodedAudio) {
+				songBuffer = decodedAudio;
+			  }
+			};
+			for (const [filename, callback] of Object.entries(iterateThis)) {
+			  const request = new XMLHttpRequest();
+			  request.open("GET", "https://soundplant.org/wavesurfer/" + filename);
+			  request.responseType = "arraybuffer";
+			  request.onload = function () {
+				console.log("loaded " + filename);
+				ac.decodeAudioData(request.response, (data) => {
+				  console.log("decoded " + filename);
+				  callback(data);
+				  thingsLoaded++;
+				  if (thingsLoaded == 2) {
+					buttonElement.innerText = "start/stop toggle";
+					buttonElement.removeAttribute("disabled");
+					buttonElement.click();
+				  }
+				});
+			  };
+			  request.send();
+			}
+		  } else if (source) {
+			source.stop();
+			source.disconnect();
+			source = null;
+		  } else {
+			source = ac.createBufferSource();
+			source.buffer = songBuffer;
+			source.connect(gainNode);
+			source.start();
+		  }
+		});
+
+	</script>
+  </body>
+</html>
